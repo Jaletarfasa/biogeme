@@ -1,0 +1,76 @@
+Hi members,I am new to biogeme  and want to learn.Using Python I tried to fit to my data, in long format, mixed logit using the following code in python but din't work for me.#from biogeme.random import HaltonDraws
+
+# Define variables
+Attribute1 = database.variables['Wsup']  # This variable represents the days per week of water supply
+Attribute1= database.variables['Wqua']  # This variable is dummy(1=yes,0=No)
+price_increase = database.variables['Price']  # This attribute has five levesl 3,5,10,15,20
+
+# Define parameters to be estimated
+#beta1_mean = ex.Beta('beta1_mean', 0, None, None, 0)  # Mean of the distribution for beta1
+#beta1_stddev = ex.Beta('beta1_stddev', 0, None, None, 0)  # Standard deviation of the distribution for beta1
+#beta1 = beta1_mean + beta1_stddev * ex.bioDraws('beta1', 'NORMAL')
+
+#beta2_mean = ex.Beta('beta2_mean', 0, None, None, 0)  # Parameter for water_quality
+#beta2_stddev = ex.Beta('beta2_stddev', 0, None, None, 0)  # Standard deviation of the distribution for beta2
+#beta2 = beta2_mean + beta2_stddev * ex.bioDraws('beta2', 'NORMAL')
+
+#beta3_mean = ex.Beta('beta3_mean', 0, None, None, 0)  # Parameter for price_increase
+#beta3_stddev = ex.Beta('beta3_stddev', 0, None, None, 0)  # Standard deviation of the distribution for beta3
+#beta3 = beta3_mean + beta3_stddev * ex.bioDraws('beta3', 'NORMAL')
+
+# Define parameters to be estimated
+beta1_mean = ex.Beta('beta1_mean', 1, None, None, 0)  # Parameter for attribute1
+beta1_stddev = ex.Beta('beta1_stddev', 0.5, None, None, 0)  # Standard deviation of the distribution for beta1
+beta1 = beta1_mean + beta1_stddev * ex.bioDraws('beta1', 'NORMAL')
+
+beta2_mean = ex.Beta('beta2_mean', 1, None, None, 0)  # Parameter for attribute2
+beta2_stddev = ex.Beta('beta2_stddev', 0.5, None, None, 0)  # Standard deviation of the distribution for beta2
+beta2 = beta2_mean + beta2_stddev * ex.bioDraws('beta2', 'NORMAL')
+
+beta3_mean = ex.Beta('beta3_mean', 1, None, None, 0)  # Parameter for price_increase
+beta3_stddev = ex.Beta('beta3_stddev', 0.5, None, None, 0)  # Standard deviation of the distribution for beta3
+beta3 = beta3_mean + beta3_stddev * ex.bioDraws('beta3', 'NORMAL')
+
+# Define a common alternative specific constant for alternatives 1 and 2
+#ASC = ex.Beta('ASC', 0, None, None, 0)
+
+
+chosen_alternative = database.variables['Chosen']
+The alternatives are 3:1,2,3(status quo)
+# Define parameters for the ASCs
+ASC1 = ex.Beta('ASC1', 0, None, None, 0)
+ASC2 = ex.Beta('ASC2', 0, None, None, 0)
+
+# Define utility functions for each alternative(unlabelled design)
+V1 = ASC + beta1 * Attribute1 + beta2 * Attribute2 + beta3 * price_increase
+V2 = ASC + beta1 * Attribute1 + beta2 * Attribute2 + beta3 * price_increase
+V3 = beta1 * Attribute1 + beta2 * Attribute2 + beta3 * price_increase
+
+V = {1: V1,
+     2: V2,
+     3: V3}
+
+# Define the availability of alternatives
+# Define the availability of alternatives
+av = {1: database.variables['Concept'] == 1,
+      2: database.variables['Concept'] == 2,
+      3: database.variables['Concept'] == 3}
+
+# Define the log likelihood function for the mixed logit model
+# This uses Halton draws for simulation
+# The seed is set for reproducibility
+# The number of tasks is specified
+num_draws = 20  # Number of Halton draws
+draws = ex.bioDraws('draws', 'HALTON2')
+P = models.loglogit(V, None, chosen_alternative)
+logprob = ex.MonteCarlo(ex.log(P))
+
+# Create Biogeme object
+#biogeme = bio.BIOGEME(database, logprob)
+# Create Biogeme object
+biogeme = bio.BIOGEME(database, logprob, modelName="myModel")
+# Estimate the parameters
+results = biogeme.estimate()
+results
+I greatly appreciate any help for getting the code right.
+Thank you Jale
